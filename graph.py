@@ -12,6 +12,8 @@ class node:
         self.connections = []
         self.traveled = 0
         self.visited = False
+        self.occupied=[]
+        self.path=[]
 
     # def __cmp__(self, other):
     #     return cmp(self.traveled,other.traveled)
@@ -63,16 +65,21 @@ def dijkstra(start_node :node, finish_node:node):
         priority_que.sort(key=getKey)
         current = priority_que[0]
         if current is finish_node:
-            return current.traveled
+            return current.path,current.traveled
         priority_que.pop(0)
         for i in range(len(current.connections)):
-            if not current.connections[i].target_node.visited:
-                current.connections[i].target_node.traveled = current.traveled + current.connections[i].distance
-                priority_que.append(current.connections[i].target_node)
-                current.connections[i].target_node.visited = True
-            else:
-                current.connections[i].target_node.traveled = min(current.traveled + current.connections[i].distance, current.connections[i].target_node.traveled)
-
+            if (current.traveled + current.connections[i].distance) not in current.connections[i].target_node.occupied:
+                if not current.connections[i].target_node.visited:
+                    current.connections[i].target_node.traveled = current.traveled + current.connections[i].distance
+                    priority_que.append(current.connections[i].target_node)
+                    current.connections[i].target_node.path=copy.deepcopy(current.path)
+                    current.connections[i].target_node.path.append(current.lable)
+                    current.connections[i].target_node.visited = True
+                else:
+                    if current.traveled + current.connections[i].distance < current.connections[i].target_node.traveled:
+                        current.connections[i].target_node.traveled = current.traveled + current.connections[i].distance
+                        current.connections[i].target_node.path=copy.deepcopy(current.path)
+                        current.connections[i].target_node.path.append(current.lable)
 
 
 g = graph()
@@ -83,8 +90,10 @@ g.add_node(5)
 g.add_node(4)
 g.make_connection(g.get_node(1), g.get_node(2), 10)
 g.make_connection(g.get_node(2), g.get_node(4), 2)
-g.make_connection(g.get_node(1), g.get_node(3), 30)
+g.make_connection(g.get_node(1), g.get_node(3), 3)
 g.make_connection(g.get_node(3), g.get_node(4), 4)
 g.make_connection(g.get_node(1), g.get_node(5), 5)
 g.make_connection(g.get_node(5), g.get_node(4), 6)
-print(dijkstra(g.get_node(1), g.get_node(4)))
+d=dijkstra(g.get_node(1), g.get_node(4))
+for i in range(len(m)):
+    print(m[i])
