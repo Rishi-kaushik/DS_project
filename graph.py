@@ -29,6 +29,11 @@ class graph:
     def __init__(self):
         self.nodes = []
 
+    def reset(self):
+        for i in range(len(self.nodes)):
+            self.nodes[i].traveled = 0
+            self.nodes[i].visited = False
+            self.nodes[i].path=[]
 
     def add_node(self, lable=0):
         self.nodes.append(node(lable))
@@ -55,32 +60,35 @@ class graph:
         for i in range(len(self.nodes)):
             self.nodes[i].draw()
 
-def getKey(node:node):
-    return node.traveled
-
-def dijkstra(start_node :node, finish_node:node):
-    priority_que = [start_node]
-    start_node.visited = True
-    while True:
-        priority_que.sort(key=getKey)
-        current = priority_que[0]
-        if current is finish_node:
-            return current.path,current.traveled
-        priority_que.pop(0)
-        for i in range(len(current.connections)):
-            if (current.traveled + current.connections[i].distance) not in current.connections[i].target_node.occupied:
-                if not current.connections[i].target_node.visited:
-                    current.connections[i].target_node.traveled = current.traveled + current.connections[i].distance
-                    priority_que.append(current.connections[i].target_node)
-                    current.connections[i].target_node.path=copy.deepcopy(current.path)
-                    current.connections[i].target_node.path.append(current.lable)
-                    current.connections[i].target_node.visited = True
-                else:
-                    if current.traveled + current.connections[i].distance < current.connections[i].target_node.traveled:
+    def dijkstra(self,start_node :node, finish_node:node):
+        priority_que = [start_node]
+        start_node.visited = True
+        while True:
+            priority_que.sort(key=getKey)
+            current = priority_que[0]
+            if current is finish_node:
+                current.path.append(current.lable)
+                for i in range(len(current.path)):
+                    self.get_node(current.path[i]).occupied.append(self.get_node(current.path[i]).traveled)
+                path=current.path
+                self.reset()
+                return path
+            priority_que.pop(0)
+            for i in range(len(current.connections)):
+                if (current.traveled + current.connections[i].distance) not in current.connections[i].target_node.occupied:
+                    if not current.connections[i].target_node.visited:
                         current.connections[i].target_node.traveled = current.traveled + current.connections[i].distance
+                        priority_que.append(current.connections[i].target_node)
                         current.connections[i].target_node.path=copy.deepcopy(current.path)
                         current.connections[i].target_node.path.append(current.lable)
-
+                        current.connections[i].target_node.visited = True
+                    else:
+                        if current.traveled + current.connections[i].distance < current.connections[i].target_node.traveled:
+                            current.connections[i].target_node.traveled = current.traveled + current.connections[i].distance
+                            current.connections[i].target_node.path=copy.deepcopy(current.path)
+                            current.connections[i].target_node.path.append(current.lable)
+def getKey(node:node):
+        return node.traveled
 
 g = graph()
 g.add_node(1)
@@ -89,11 +97,14 @@ g.add_node(3)
 g.add_node(5)
 g.add_node(4)
 g.make_connection(g.get_node(1), g.get_node(2), 10)
-g.make_connection(g.get_node(2), g.get_node(4), 2)
-g.make_connection(g.get_node(1), g.get_node(3), 3)
+g.make_connection(g.get_node(2), g.get_node(4), 8)
+g.make_connection(g.get_node(1), g.get_node(3), 4)
 g.make_connection(g.get_node(3), g.get_node(4), 4)
 g.make_connection(g.get_node(1), g.get_node(5), 5)
 g.make_connection(g.get_node(5), g.get_node(4), 6)
-d=dijkstra(g.get_node(1), g.get_node(4))
+m=g.dijkstra(g.get_node(1), g.get_node(4))
 for i in range(len(m)):
-    print(m[i])
+    print(m[i],'  ',g.get_node(m[i]).occupied)
+m=g.dijkstra(g.get_node(2), g.get_node(3))
+for i in range(len(m)):
+    print(m[i],'  ',g.get_node(m[i]).occupied)
